@@ -1,16 +1,18 @@
 """Data coordinator for Zehnder Multicontroller."""
+
 from __future__ import annotations
 
 import logging
 from datetime import timedelta
 
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import CONF_SCAN_INTERVAL
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from homeassistant.helpers.update_coordinator import UpdateFailed
 
 from .api import RainmakerAPI
 from .const import DEFAULT_SCAN_INTERVAL
-
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -19,16 +21,40 @@ class RainmakerCoordinator(DataUpdateCoordinator):
     """Coordinator to fetch Rainmaker nodes and params."""
 
     def __init__(
-        self, hass: HomeAssistant, api: RainmakerAPI, entry: object | None = None
+        self, hass: HomeAssistant, api: RainmakerAPI, entry: ConfigEntry | None = None
     ) -> None:
         super().__init__(
             hass,
             _LOGGER,
             name="zehnder_multicontroller",
-            update_interval=timedelta(seconds=DEFAULT_SCAN_INTERVAL),
+            update_interval=timedelta(
+                seconds=(
+                    entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
+                    if entry is not None
+                    else DEFAULT_SCAN_INTERVAL
+                )
+            ),
         )
         self.api = api
         self.entry = entry
+
+    async def async_set_param(self, node_id: str, param: str, value) -> None:
+        """Write a param and reflect it locally instead of re-reading the cloud.
+
+        The RainMaker cloud keeps returning the previous value for a while
+        after a write, so an immediate refresh would revert the UI.
+        """
+        await self.api.async_set_param(node_id, param, value)
+        # ponytail: trust the write; async_set_updated_data pushes the next poll a
+        # full scan interval out (>=30s), which is when the cloud has caught up.
+        # If it still lags, hold pending writes until the cloud agrees.
+        node = self.data.get(node_id, {})
+        self.async_set_updated_data(
+            {
+                **self.data,
+                node_id: {**node, param: {**node.get(param, {}), "value": value}},
+            }
+        )
 
     async def _ensure_connected(self):
         # Ensure API is connected

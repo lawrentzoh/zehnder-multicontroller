@@ -1,10 +1,13 @@
 """Unit tests for the Rainmaker API adapter."""
+
 from __future__ import annotations
 
 import asyncio
+from unittest.mock import create_autospec
 
 import pytest
 from custom_components.zehnder_multicontroller import api as api_module
+from rainmaker_http.client import RainmakerClient
 
 
 class DummyClient:
@@ -31,7 +34,7 @@ class DummyClient:
     async def async_set_params(self, batch):
         return [{"node_id": batch[0]["node_id"], "status": "success"}]
 
-    async def async_close(self):
+    async def close(self):
         self._closed = True
 
 
@@ -74,7 +77,7 @@ async def test_async_get_nodes_wrong_format(monkeypatch):
         async def async_get_nodes(self, node_details: bool = False) -> dict:
             return {"unexpected": []}
 
-        async def async_close(self):
+        async def close(self):
             return None
 
     monkeypatch.setattr(api_module, "RainmakerClient", BadClient)
@@ -85,9 +88,39 @@ async def test_async_get_nodes_wrong_format(monkeypatch):
         await api.async_get_nodes()
 
 
-def test_async_set_param_not_connected():
+@pytest.mark.asyncio
+async def test_reconnect_closes_client_and_retries_read(monkeypatch):
+    """Recover a failed read using the real client's close interface."""
+    failed_client = create_autospec(RainmakerClient, instance=True)
+    failed_client.async_get_nodes.side_effect = api_module.RainmakerConnectionError(
+        "Read failed"
+    )
+    replacement_client = create_autospec(RainmakerClient, instance=True)
+    nodes = {"node_details": [{"id": "n1"}]}
+    replacement_client.async_get_nodes.return_value = nodes
+    factory = create_autospec(RainmakerClient, return_value=replacement_client)
+    monkeypatch.setattr(api_module, "RainmakerClient", factory)
+
+    api = api_module.RainmakerAPI(None, "https://host/", "user", "pass")
+    api._client = failed_client
+    api._connected = True
+
+    assert await api.async_get_nodes() == nodes
+
+    failed_client.close.assert_awaited_once_with()
+    factory.assert_called_once_with("https://host/")
+    replacement_client.async_login.assert_awaited_once_with("user", "pass")
+    replacement_client.async_get_nodes.assert_awaited_once_with(node_details=True)
+    assert api.is_connected
+
+    await api.async_close()
+    replacement_client.close.assert_awaited_once_with()
+    assert api._client is None
+    assert not api.is_connected
+
+
+@pytest.mark.asyncio
+async def test_async_set_param_not_connected():
     api = api_module.RainmakerAPI(None, "https://host/", "user", "pass")
     with pytest.raises(api_module.RainmakerConnectionError):
-        import asyncio
-
-        asyncio.get_event_loop().run_until_complete(api.async_set_param("n1", "p", 1))
+        await api.async_set_param("n1", "p", 1)

@@ -19,5 +19,116 @@
     "abort": {
       "already_configured": "This account is already configured."
     }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Polling interval",
+        "description": "Choose how often Home Assistant reads the RainMaker cloud. Default: 120 seconds; minimum: 30 seconds. A shorter interval may return unchanged device data.",
+        "data": {
+          "scan_interval": "Polling interval (seconds)"
+        }
+      }
+    },
+    "error": {
+      "invalid_scan_interval": "Enter a whole number of at least 30 seconds."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "caq_out_t": {
+        "name": "Outdoor air temperature"
+      },
+      "caq_exh_t": {
+        "name": "Exhaust air temperature"
+      },
+      "caq_ext_t": {
+        "name": "Extract air temperature"
+      },
+      "caq_sup_t": {
+        "name": "Supply air temperature"
+      },
+      "caq_out_h": {
+        "name": "Outdoor air humidity"
+      },
+      "caq_exh_h": {
+        "name": "Exhaust air humidity"
+      },
+      "caq_ext_h": {
+        "name": "Extract air humidity"
+      },
+      "caq_sup_h": {
+        "name": "Supply air humidity"
+      },
+      "alarm": {
+        "name": "Alarm code"
+      },
+      "caq_bypass_mode": {
+        "name": "Bypass mode"
+      },
+      "fan_alarm": {
+        "name": "Ventilation alarm code"
+      },
+      "humidity": {
+        "name": "Room humidity"
+      },
+      "ip": {
+        "name": "IP address"
+      },
+      "temp": {
+        "name": "Room temperature"
+      }
+    },
+    "number": {
+      "fan_away": {
+        "name": "Ventilation away setting"
+      },
+      "fan_boost": {
+        "name": "Ventilation boost"
+      },
+      "fan_speed": {
+        "name": "Ventilation level"
+      },
+      "humidity_correction": {
+        "name": "Dehumidification adjustment"
+      },
+      "season": {
+        "name": "Operating season"
+      },
+      "temp_setpoint": {
+        "name": "Target temperature"
+      }
+    },
+    "switch": {
+      "fan_automatic": {
+        "name": "Automatic ventilation"
+      },
+      "integration_enabled": {
+        "name": "Supplementary heating/cooling enabled"
+      },
+      "post_treatment_automatic": {
+        "name": "Automatic post-treatment"
+      },
+      "radiant_automatic": {
+        "name": "Automatic radiant control"
+      },
+      "radiant_enabled": {
+        "name": "Radiant control enabled"
+      }
+    },
+    "binary_sensor": {
+      "dehumidifier": {
+        "name": "Dehumidification"
+      },
+      "integration": {
+        "name": "Supplementary heating/cooling"
+      },
+      "radiant": {
+        "name": "Radiant control"
+      },
+      "season_automatic": {
+        "name": "Automatic season change"
+      }
+    }
   }
 }

@@ -1,4 +1,5 @@
 """Constants for Zehnder Multicontroller."""
+
 from __future__ import annotations
 
 from homeassistant.const import Platform
@@ -20,3 +21,4 @@ PLATFORMS: list[Platform] = [
 
 # Default polling interval in seconds
 DEFAULT_SCAN_INTERVAL = 120
+MIN_SCAN_INTERVAL = 30

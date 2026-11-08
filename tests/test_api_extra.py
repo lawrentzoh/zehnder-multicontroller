@@ -1,4 +1,5 @@
 """Extra unit tests for the Rainmaker API adapter."""
+
 from __future__ import annotations
 
 import pytest
@@ -160,7 +161,7 @@ async def test_async_set_param_client_raises():
 @pytest.mark.asyncio
 async def test_async_close_handles_error():
     class Client:
-        async def async_close(self):
+        async def close(self):
             raise ClientError("close fail")
 
     api = RainmakerAPI(None, "h", "u", "p")

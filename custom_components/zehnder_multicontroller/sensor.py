@@ -1,4 +1,5 @@
 """Sensor platform for Zehnder Multicontroller."""
+
 from __future__ import annotations
 
 import logging
@@ -7,7 +8,10 @@ from typing import Any
 
 from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.components.sensor import SensorEntity
+from homeassistant.components.sensor import SensorStateClass
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import PERCENTAGE
+from homeassistant.const import UnitOfTemperature
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -17,6 +21,29 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
+
+CAQ_TRANSLATION_KEYS = frozenset(
+    {
+        "caq_out_t",
+        "caq_exh_t",
+        "caq_ext_t",
+        "caq_sup_t",
+        "caq_out_h",
+        "caq_exh_h",
+        "caq_ext_h",
+        "caq_sup_h",
+    }
+)
+
+
+SENSOR_TRANSLATION_KEYS = CAQ_TRANSLATION_KEYS | {
+    "alarm",
+    "caq_bypass_mode",
+    "fan_alarm",
+    "humidity",
+    "ip",
+    "temp",
+}
 
 
 class RainmakerParamSensor(CoordinatorEntity, SensorEntity):
@@ -33,12 +60,22 @@ class RainmakerParamSensor(CoordinatorEntity, SensorEntity):
         self._node_id = node_id
         self._node_name = node_name
         self._param = param
-        self._attr_name = f"{node_name} {param}"
+        if param == "temp" or (param in CAQ_TRANSLATION_KEYS and param.endswith("_t")):
+            self._attr_device_class = SensorDeviceClass.TEMPERATURE
+            self._attr_native_unit_of_measurement = UnitOfTemperature.CELSIUS
+            self._attr_state_class = SensorStateClass.MEASUREMENT
+        elif param == "humidity" or (
+            param in CAQ_TRANSLATION_KEYS and param.endswith("_h")
+        ):
+            self._attr_device_class = SensorDeviceClass.HUMIDITY
+            self._attr_native_unit_of_measurement = PERCENTAGE
+            self._attr_state_class = SensorStateClass.MEASUREMENT
+        if param in SENSOR_TRANSLATION_KEYS:
+            self._attr_has_entity_name = True
+            self._attr_translation_key = param
+        else:
+            self._attr_name = f"{node_name} {param}"
         self._unique_id = f"{entry_id}_{node_id}_{param}"
-
-    @cached_property
-    def name(self) -> str | None:
-        return self._attr_name
 
     @cached_property
     def unique_id(self) -> str | None:
@@ -54,7 +91,7 @@ class RainmakerParamSensor(CoordinatorEntity, SensorEntity):
     @cached_property
     def device_info(self) -> DeviceInfo | None:
         return DeviceInfo(
-            identifiers={(DOMAIN, f"{self._entry_id}_{self._node_id}" )},
+            identifiers={(DOMAIN, f"{self._entry_id}_{self._node_id}")},
             name=self._node_name,
             manufacturer="ESP RainMaker",
         )

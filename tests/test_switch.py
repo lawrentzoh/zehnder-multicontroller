@@ -1,4 +1,5 @@
 """Tests for switch platform entity behaviour."""
+
 from __future__ import annotations
 
 import pytest
@@ -34,9 +35,9 @@ async def test_switch_is_on_and_service_calls(monkeypatch, DummyCoordinator, Dum
     coordinator.api = api
     await switch.async_turn_off()
     api.async_set_param.assert_called_with("node1", "param1", False)
-    coordinator.async_request_refresh.assert_awaited()
+    coordinator.async_request_refresh.assert_not_awaited()
 
     # Turn on
     await switch.async_turn_on()
     api.async_set_param.assert_called_with("node1", "param1", True)
-    coordinator.async_request_refresh.assert_awaited()
+    coordinator.async_request_refresh.assert_not_awaited()

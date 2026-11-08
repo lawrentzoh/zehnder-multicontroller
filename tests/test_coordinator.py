@@ -1,4 +1,5 @@
 """Unit tests for RainmakerCoordinator."""
+
 from __future__ import annotations
 
 import pytest
@@ -40,3 +41,20 @@ async def test_coordinator_missing_node_details(hass, DummyAPI):
 
     with pytest.raises(UpdateFailed):
         await RainmakerCoordinator._async_update_data(coord)
+
+
+@pytest.mark.asyncio
+async def test_set_param_updates_locally_without_cloud_reread(hass, DummyAPI):
+    """The cloud lags after a write: the written value must stick, not the stale one."""
+    from unittest.mock import AsyncMock
+
+    api = DummyAPI()
+    coord = RainmakerCoordinator(hass, api)
+    coord.data = {"n1": {"fan_speed": {"value": 1, "bounds": {"max": 3}}}}
+    coord.async_request_refresh = AsyncMock()
+
+    await coord.async_set_param("n1", "fan_speed", 3)
+
+    api.async_set_param.assert_awaited_once_with("n1", "fan_speed", 3)
+    assert coord.data["n1"]["fan_speed"] == {"value": 3, "bounds": {"max": 3}}
+    coord.async_request_refresh.assert_not_awaited()

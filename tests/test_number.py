@@ -1,4 +1,5 @@
 """Unit tests for number platform."""
+
 from __future__ import annotations
 
 import pytest
@@ -46,7 +47,7 @@ async def test_number_async_set_native_value(DummyCoordinator, DummyAPI):
     await ent.async_set_native_value(5.0)
 
     api.async_set_param.assert_called_with("n1", "setpoint", 5.0)
-    coord.async_request_refresh.assert_awaited()
+    coord.async_request_refresh.assert_not_awaited()
 
 
 @pytest.mark.asyncio

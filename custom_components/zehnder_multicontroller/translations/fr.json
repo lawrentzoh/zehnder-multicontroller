@@ -25,7 +25,17 @@
           "sensor": "Capteur activé",
           "switch": "Interrupteur activé"
         }
+      },
+      "init": {
+        "title": "Intervalle de mise à jour",
+        "description": "Choisissez la fréquence de lecture du cloud RainMaker. Par défaut : 120 secondes ; minimum : 30 secondes. Un intervalle plus court peut renvoyer des données inchangées.",
+        "data": {
+          "scan_interval": "Intervalle de mise à jour (secondes)"
+        }
       }
+    },
+    "error": {
+      "invalid_scan_interval": "Saisissez un nombre entier supérieur ou égal à 30 secondes."
     }
   }
 }

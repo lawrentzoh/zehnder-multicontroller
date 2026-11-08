@@ -104,10 +104,10 @@ async def test_supported_features_and_setters(DummyCoordinator, DummyAPI):
     # Should include both temperature and fan
     assert features
 
-    # Test async_set_temperature triggers api and refresh
+    # Test async_set_temperature calls api without re-reading the cloud
     await c.async_set_temperature(temperature=21)
     api.async_set_param.assert_called_with("n", "temp_setpoint", 21)
-    coord.async_request_refresh.assert_awaited()
+    coord.async_request_refresh.assert_not_awaited()
 
     # Test async_set_hvac_mode transitions
     api.async_set_param.reset_mock()
@@ -207,7 +207,7 @@ def test_async_setup_entry_skips_node_without_temp(monkeypatch, DummyCoordinator
             return None
 
     monkeypatch.setattr(
-        "custom_components.zehnder_multicontroller.climate.er.async_get",
+        "homeassistant.helpers.entity_registry.async_get",
         lambda hass: Reg(),
     )
 
@@ -320,7 +320,7 @@ def test_async_setup_entry_no_entry_data_climate():
     )
 
 
-def test_async_setup_entry_creates_and_skips(monkeypatch, DummyCoordinator):
+def test_async_setup_entry_recreates_registered_entity(monkeypatch, DummyCoordinator):
     # Prepare coordinator with one node that has temp
     data = {"nodea": {"temp": {"value": 21}, "Name": {"value": "NA"}}}
     coord = DummyCoordinator(data)
@@ -343,7 +343,7 @@ def test_async_setup_entry_creates_and_skips(monkeypatch, DummyCoordinator):
             return None
 
     monkeypatch.setattr(
-        "custom_components.zehnder_multicontroller.climate.er.async_get",
+        "homeassistant.helpers.entity_registry.async_get",
         lambda hass: Reg(),
     )
 
@@ -359,7 +359,7 @@ def test_async_setup_entry_creates_and_skips(monkeypatch, DummyCoordinator):
     )
     assert any(e for e in added if isinstance(e.__class__.__name__, str))
 
-    # Now simulate registry returning an id -> should skip creating duplicates
+    # An existing registry entry must still get a new runtime entity on reload
     added.clear()
 
     class Reg2:
@@ -367,11 +367,12 @@ def test_async_setup_entry_creates_and_skips(monkeypatch, DummyCoordinator):
             return "climate.zehnder_multicontroller_eid_nodea_climate"
 
     monkeypatch.setattr(
-        "custom_components.zehnder_multicontroller.climate.er.async_get",
+        "homeassistant.helpers.entity_registry.async_get",
         lambda hass: Reg2(),
     )
 
     asyncio.get_event_loop().run_until_complete(
         awaitable(fake, type("E", (), {"entry_id": "eid"})(), add)
     )
-    assert len(added) == 0
+    assert len(added) == 1
+    assert added[0].unique_id == "eid_nodea_climate"

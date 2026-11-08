@@ -1,4 +1,5 @@
 """Climate platform for Zehnder Multicontroller."""
+
 from __future__ import annotations
 
 import logging
@@ -10,7 +11,6 @@ from homeassistant.components.climate import ClimateEntityFeature
 from homeassistant.components.climate import HVACMode
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
@@ -86,7 +86,7 @@ class ZehnderClimate(CoordinatorEntity, ClimateEntity):
     @cached_property
     def device_info(self) -> DeviceInfo | None:
         return DeviceInfo(
-            identifiers={(DOMAIN, f"{self._entry_id}_{self._node_id}" )},
+            identifiers={(DOMAIN, f"{self._entry_id}_{self._node_id}")},
             name=self._node_name,
             manufacturer="ESP RainMaker",
         )
@@ -189,30 +189,28 @@ class ZehnderClimate(CoordinatorEntity, ClimateEntity):
         if temperature is None:
             return
         try:
-            await self.coordinator.api.async_set_param(
+            await self.coordinator.async_set_param(
                 self._node_id, "temp_setpoint", temperature
             )
-            await self.coordinator.async_request_refresh()
         except Exception:  # pragma: no cover - runtime dependent
             _LOGGER.exception("Failed to set temperature on %s", self._node_id)
 
     async def async_set_hvac_mode(self, hvac_mode: str) -> None:
         try:
             if hvac_mode == HVACMode.OFF.value:
-                await self.coordinator.api.async_set_param(
+                await self.coordinator.async_set_param(
                     self._node_id, "radiant_enabled", False
                 )
             elif hvac_mode == HVACMode.HEAT.value:
-                await self.coordinator.api.async_set_param(self._node_id, "season", 1)
-                await self.coordinator.api.async_set_param(
+                await self.coordinator.async_set_param(self._node_id, "season", 1)
+                await self.coordinator.async_set_param(
                     self._node_id, "radiant_enabled", True
                 )
             elif hvac_mode == HVACMode.COOL.value:
-                await self.coordinator.api.async_set_param(self._node_id, "season", 2)
-                await self.coordinator.api.async_set_param(
+                await self.coordinator.async_set_param(self._node_id, "season", 2)
+                await self.coordinator.async_set_param(
                     self._node_id, "radiant_enabled", True
                 )
-            await self.coordinator.async_request_refresh()
         except Exception:  # pragma: no cover - runtime dependent
             _LOGGER.exception("Failed to set hvac mode on %s", self._node_id)
 
@@ -222,10 +220,7 @@ class ZehnderClimate(CoordinatorEntity, ClimateEntity):
                 _LOGGER.warning("Unknown fan mode: %s", fan_mode)
                 return
             level = self._fan_names.index(fan_mode)
-            await self.coordinator.api.async_set_param(
-                self._node_id, "fan_speed", level
-            )
-            await self.coordinator.async_request_refresh()
+            await self.coordinator.async_set_param(self._node_id, "fan_speed", level)
         except Exception:  # pragma: no cover - runtime dependent
             _LOGGER.exception("Failed to set fan mode on %s", self._node_id)
 
@@ -246,7 +241,6 @@ async def async_setup_entry(
     _LOGGER.debug("Coordinator data contains %d nodes", len(coordinator.data))
 
     entities: list[ZehnderClimate] = []
-    registry = er.async_get(hass)
 
     for node_id, params in coordinator.data.items():
         _LOGGER.debug("Checking node %s for climate entity creation", node_id)
@@ -256,16 +250,8 @@ async def async_setup_entry(
             _LOGGER.debug("Node %s does not have 'temp' parameter, skipping", node_id)
             continue
 
-        unique_id = f"{entry.entry_id}_{node_id}_climate"
-
-        if registry.async_get_entity_id("climate", DOMAIN, unique_id) is not None:
-            _LOGGER.debug(
-                "Skipping climate entity for node %s because unique_id %s is already registered",
-                node_id,
-                unique_id,
-            )
-            continue
-
+        # Recreate runtime entities on every setup. Home Assistant reuses the
+        # existing registry entry through the stable unique_id.
         node_name = params.get("Name", {}).get("value", node_id)
         _LOGGER.info(
             "Creating climate entity for node %s (name: %s)", node_id, node_name

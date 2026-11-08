@@ -1,4 +1,5 @@
 """Binary sensor platform for Zehnder Multicontroller."""
+
 from __future__ import annotations
 
 import logging
@@ -16,6 +17,10 @@ from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
+TRANSLATED_PARAMETERS = frozenset(
+    {"dehumidifier", "integration", "radiant", "season_automatic"}
+)
+
 
 class RainmakerParamBinarySensor(CoordinatorEntity, BinarySensorEntity):
     def __init__(
@@ -31,12 +36,12 @@ class RainmakerParamBinarySensor(CoordinatorEntity, BinarySensorEntity):
         self._node_id = node_id
         self._node_name = node_name
         self._param = param
-        self._attr_name = f"{node_name} {param}"
+        if param in TRANSLATED_PARAMETERS:
+            self._attr_has_entity_name = True
+            self._attr_translation_key = param
+        else:
+            self._attr_name = f"{node_name} {param}"
         self._unique_id = f"{entry_id}_{node_id}_{param}"
-
-    @cached_property
-    def name(self) -> str | None:
-        return self._attr_name
 
     @cached_property
     def unique_id(self) -> str | None:

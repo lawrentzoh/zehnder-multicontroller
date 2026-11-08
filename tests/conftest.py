@@ -1,4 +1,5 @@
 """Global fixtures for Zehnder Multicontroller integration."""
+
 from unittest.mock import patch
 
 import pytest
@@ -110,6 +111,9 @@ def fixture_dummy_coordinator():
             self.data = data or {}
             self.async_request_refresh = AsyncMock()
             self.api = None
+
+        async def async_set_param(self, node_id, param, value):
+            await self.api.async_set_param(node_id, param, value)
 
         async def async_config_entry_first_refresh(self):
             return None

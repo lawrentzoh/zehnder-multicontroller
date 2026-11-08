@@ -1,4 +1,5 @@
 """Additional tests for climate platform to increase coverage."""
+
 from __future__ import annotations
 
 import pytest
@@ -158,21 +159,21 @@ async def test_async_setters_and_features(DummyCoordinator, DummyAPI):
     features = ent.get_supported_features()
     assert features
 
-    # async_set_temperature should call API and request refresh
+    # async_set_temperature should call API without immediate refresh
     await ent.async_set_temperature(temperature=24.0)
     api.async_set_param.assert_any_call("n1", "temp_setpoint", 24.0)
-    coord.async_request_refresh.assert_awaited()
+    coord.async_request_refresh.assert_not_awaited()
 
     # async_set_hvac_mode transitions
     await ent.async_set_hvac_mode("off")
     await ent.async_set_hvac_mode("heat")
     await ent.async_set_hvac_mode("cool")
-    coord.async_request_refresh.assert_awaited()
+    coord.async_request_refresh.assert_not_awaited()
 
     # async_set_fan_mode invalid then valid
     await ent.async_set_fan_mode("invalid")
     await ent.async_set_fan_mode(ent.fan_modes[0])
-    coord.async_request_refresh.assert_awaited()
+    coord.async_request_refresh.assert_not_awaited()
 
 
 @pytest.mark.asyncio
@@ -193,7 +194,7 @@ async def test_async_setup_entry_registry_behavior(DummyCoordinator, monkeypatch
     def add(entities, update_before):
         added.extend(entities)
 
-    # Case 1: registry returns an entity id -> skip creation
+    # Case 1: an existing registry entry still needs a runtime entity
     class Reg:
         def async_get(self, hass):
             return self
@@ -205,7 +206,8 @@ async def test_async_setup_entry_registry_behavior(DummyCoordinator, monkeypatch
         "homeassistant.helpers.entity_registry.async_get", lambda hass: Reg()
     )
     await async_setup_entry(hass, entry, add)
-    assert len(added) == 0
+    assert len(added) == 1
+    assert added[0].unique_id == "e1_n1_climate"
 
     # Case 2: registry returns None -> create entity
     class Reg2:

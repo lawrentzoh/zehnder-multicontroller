@@ -1,4 +1,5 @@
 """Switch platform for Zehnder Multicontroller."""
+
 from __future__ import annotations
 
 import logging
@@ -17,6 +18,16 @@ from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
+TRANSLATED_PARAMETERS = frozenset(
+    {
+        "fan_automatic",
+        "integration_enabled",
+        "post_treatment_automatic",
+        "radiant_automatic",
+        "radiant_enabled",
+    }
+)
+
 
 class RainmakerParamSwitch(CoordinatorEntity, SwitchEntity):
     def __init__(
@@ -32,12 +43,12 @@ class RainmakerParamSwitch(CoordinatorEntity, SwitchEntity):
         self._node_id = node_id
         self._node_name = node_name
         self._param = param
-        self._attr_name = f"{node_name} {param}"
+        if param in TRANSLATED_PARAMETERS:
+            self._attr_has_entity_name = True
+            self._attr_translation_key = param
+        else:
+            self._attr_name = f"{node_name} {param}"
         self._unique_id = f"{entry_id}_{node_id}_{param}"
-
-    @cached_property
-    def name(self) -> str | None:
-        return self._attr_name
 
     @cached_property
     def unique_id(self) -> str | None:
@@ -52,38 +63,24 @@ class RainmakerParamSwitch(CoordinatorEntity, SwitchEntity):
     @cached_property
     def device_info(self) -> DeviceInfo | None:
         return DeviceInfo(
-            identifiers={(DOMAIN, f"{self._entry_id}_{self._node_id}" )},
+            identifiers={(DOMAIN, f"{self._entry_id}_{self._node_id}")},
             name=self._node_name,
             manufacturer="ESP RainMaker",
         )
 
     async def async_turn_on(self, **kwargs: Any) -> None:
-        try:
-            await self.hass.data[DOMAIN][self._entry_id][
-                "coordinator"
-            ].api.async_set_param(self._node_id, self._param, True)
-        except Exception:  # pragma: no cover - surface errors to logs
-            _LOGGER.exception(
-                "Error turning on %s on node %s", self._param, self._node_id
-            )
-        finally:
-            await self.hass.data[DOMAIN][self._entry_id][
-                "coordinator"
-            ].async_request_refresh()
+        await self._async_set(True)
 
     async def async_turn_off(self, **kwargs: Any) -> None:
+        await self._async_set(False)
+
+    async def _async_set(self, value: bool) -> None:
         try:
-            await self.hass.data[DOMAIN][self._entry_id][
-                "coordinator"
-            ].api.async_set_param(self._node_id, self._param, False)
+            await self.coordinator.async_set_param(self._node_id, self._param, value)
         except Exception:  # pragma: no cover - surface errors to logs
             _LOGGER.exception(
-                "Error turning off %s on node %s", self._param, self._node_id
+                "Error setting %s=%s on node %s", self._param, value, self._node_id
             )
-        finally:
-            await self.hass.data[DOMAIN][self._entry_id][
-                "coordinator"
-            ].async_request_refresh()
 
 
 async def async_setup_entry(

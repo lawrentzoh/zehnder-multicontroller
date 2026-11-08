@@ -1,4 +1,5 @@
 """Unit tests for climate platform behavior."""
+
 from __future__ import annotations
 
 import pytest
@@ -59,20 +60,20 @@ async def test_temperature_and_modes_and_setters(DummyCoordinator, DummyAPI):
     # hvac_mode from season and radiant_enabled
     assert ent.hvac_mode is not None
 
-    # async setters should call API and request refresh
+    # async setters call the API and must not re-read the stale cloud
     await ent.async_set_temperature(temperature=24.0)
     api.async_set_param.assert_any_call("n1", "temp_setpoint", 24.0)
-    coord.async_request_refresh.assert_awaited()
+    coord.async_request_refresh.assert_not_awaited()
 
     await ent.async_set_hvac_mode("off")
     await ent.async_set_hvac_mode("heat")
     await ent.async_set_hvac_mode("cool")
-    # should have set season/radiant and requested refresh multiple times
-    coord.async_request_refresh.assert_awaited()
+    # should have set season/radiant without re-reading the cloud
+    coord.async_request_refresh.assert_not_awaited()
 
     # set fan mode to an invalid value should not call API
     await ent.async_set_fan_mode("invalid")
     # set to a valid fan mode
     valid = ent.fan_modes[0]
     await ent.async_set_fan_mode(valid)
-    coord.async_request_refresh.assert_awaited()
+    coord.async_request_refresh.assert_not_awaited()

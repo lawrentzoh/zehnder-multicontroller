@@ -37,12 +37,12 @@ async def test_switch_setup_and_operations(DummyCoordinator, DummyAPI):
     # Ensure entity has a hass reference so async_turn_on can access hass.data
     sw.hass = fake
 
-    # Turn on -> should call api and request refresh
+    # Turn on -> should call api, no immediate refresh
     await sw.async_turn_on()
     api.async_set_param.assert_called_with("node", "power", True)
-    coord.async_request_refresh.assert_awaited()
+    coord.async_request_refresh.assert_not_awaited()
 
-    # Turn off -> should call api and request refresh
+    # Turn off -> should call api, no immediate refresh
     api.async_set_param.reset_mock()
     await sw.async_turn_off()
     api.async_set_param.assert_called_with("node", "power", False)

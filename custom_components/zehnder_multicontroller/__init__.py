@@ -1,12 +1,16 @@
 """Zehnder Multicontroller integration (custom_component for HACS)."""
+
 from __future__ import annotations
 
 import logging
+from datetime import timedelta
 
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import CONF_SCAN_INTERVAL
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 
+from .const import DEFAULT_SCAN_INTERVAL
 from .const import DOMAIN
 from .const import PLATFORMS
 
@@ -55,11 +59,22 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         "coordinator": coordinator,
     }
 
+    entry.async_on_unload(entry.add_update_listener(async_update_options))
+
     _LOGGER.info("Forwarding setup to platforms: %s", PLATFORMS)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     _LOGGER.info("Platform setup completed for entry %s", entry.entry_id)
 
     return True
+
+
+async def async_update_options(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Apply a changed polling interval without reloading the integration."""
+    coordinator = hass.data[DOMAIN][entry.entry_id]["coordinator"]
+    coordinator.update_interval = timedelta(
+        seconds=entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
+    )
+    await coordinator.async_request_refresh()
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:

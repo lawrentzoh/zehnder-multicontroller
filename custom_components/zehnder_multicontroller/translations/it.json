@@ -1,0 +1,134 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Zehnder Multicontroller",
+        "description": "Per assistenza con la configurazione, consulta: https://github.com/morphiumdeus/zehnder-multicontroller",
+        "data": {
+          "host": "Indirizzo API RainMaker",
+          "username": "Nome utente",
+          "password": "Password"
+        }
+      }
+    },
+    "error": {
+      "auth": "Nome utente o password errati.",
+      "cannot_connect": "Impossibile connettersi alle API RainMaker.",
+      "unknown": "Si è verificato un errore imprevisto."
+    },
+    "abort": {
+      "already_configured": "Questo account è già configurato."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Intervallo di aggiornamento",
+        "description": "Scegli ogni quanto Home Assistant legge il cloud RainMaker. Valore predefinito: 120 secondi; minimo: 30 secondi. Un intervallo più breve può restituire dati invariati.",
+        "data": {
+          "scan_interval": "Intervallo di aggiornamento (secondi)"
+        }
+      }
+    },
+    "error": {
+      "invalid_scan_interval": "Inserisci un numero intero di almeno 30 secondi."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "caq_out_t": {
+        "name": "Temperatura aria esterna"
+      },
+      "caq_exh_t": {
+        "name": "Temperatura aria espulsa"
+      },
+      "caq_ext_t": {
+        "name": "Temperatura aria di ripresa"
+      },
+      "caq_sup_t": {
+        "name": "Temperatura aria di mandata"
+      },
+      "caq_out_h": {
+        "name": "Umidità aria esterna"
+      },
+      "caq_exh_h": {
+        "name": "Umidità aria espulsa"
+      },
+      "caq_ext_h": {
+        "name": "Umidità aria di ripresa"
+      },
+      "caq_sup_h": {
+        "name": "Umidità aria di mandata"
+      },
+      "alarm": {
+        "name": "Codice allarme"
+      },
+      "caq_bypass_mode": {
+        "name": "Modalità bypass"
+      },
+      "fan_alarm": {
+        "name": "Codice allarme ventilazione"
+      },
+      "humidity": {
+        "name": "Umidità ambiente"
+      },
+      "ip": {
+        "name": "Indirizzo IP"
+      },
+      "temp": {
+        "name": "Temperatura ambiente"
+      }
+    },
+    "number": {
+      "fan_away": {
+        "name": "Impostazione assenza ventilazione"
+      },
+      "fan_boost": {
+        "name": "Boost ventilazione"
+      },
+      "fan_speed": {
+        "name": "Livello ventilazione"
+      },
+      "humidity_correction": {
+        "name": "Regolazione deumidificazione"
+      },
+      "season": {
+        "name": "Stagione di funzionamento"
+      },
+      "temp_setpoint": {
+        "name": "Temperatura desiderata"
+      }
+    },
+    "switch": {
+      "fan_automatic": {
+        "name": "Ventilazione automatica"
+      },
+      "integration_enabled": {
+        "name": "Integrazione termica abilitata"
+      },
+      "post_treatment_automatic": {
+        "name": "Post-trattamento automatico"
+      },
+      "radiant_automatic": {
+        "name": "Regolazione radiante automatica"
+      },
+      "radiant_enabled": {
+        "name": "Regolazione radiante abilitata"
+      }
+    },
+    "binary_sensor": {
+      "dehumidifier": {
+        "name": "Deumidificazione"
+      },
+      "integration": {
+        "name": "Integrazione termica"
+      },
+      "radiant": {
+        "name": "Regolazione radiante"
+      },
+      "season_automatic": {
+        "name": "Cambio stagione automatico"
+      }
+    }
+  }
+}

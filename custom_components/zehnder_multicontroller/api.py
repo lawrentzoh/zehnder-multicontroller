@@ -1,4 +1,5 @@
 """API adapter for Rainmaker cloud API."""
+
 from __future__ import annotations
 
 import logging
@@ -52,7 +53,7 @@ class RainmakerAPI:
         """Close any resources held by the adapter."""
         if self._client is not None:
             try:
-                await self._client.async_close()
+                await self._client.close()
             except (
                 ClientError,
                 RuntimeError,
