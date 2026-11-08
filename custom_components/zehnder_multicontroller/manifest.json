@@ -1,12 +1,12 @@
 {
   "domain": "zehnder_multicontroller",
   "name": "Zehnder Multicontroller",
-  "codeowners": ["@morphiumdeus"],
+  "codeowners": ["@lawrentzoh"],
   "config_flow": true,
   "dependencies": [],
-  "documentation": "https://github.com/morphiumdeus/zehnder-multicontroller",
+  "documentation": "https://github.com/lawrentzoh/zehnder-multicontroller",
   "iot_class": "cloud_polling",
-  "issue_tracker": "https://github.com/morphiumdeus/zehnder-multicontroller/issues",
+  "issue_tracker": "https://github.com/lawrentzoh/zehnder-multicontroller/issues",
   "requirements": ["rainmaker-http"],
-  "version": "0.2.5"
+  "version": "0.2.6"
 }
