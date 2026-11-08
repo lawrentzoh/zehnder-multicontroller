@@ -8,6 +8,7 @@ from functools import cached_property
 from homeassistant.components.number import NumberEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
@@ -20,7 +21,6 @@ _LOGGER = logging.getLogger(__name__)
 TRANSLATED_PARAMETERS = frozenset(
     {
         "fan_away",
-        "fan_boost",
         "fan_speed",
         "humidity_correction",
         "season",
@@ -98,6 +98,15 @@ async def async_setup_entry(
     for node_id, params in coordinator.data.items():
         node_name = params.get("Name", {}).get("value", node_id)
         for param, meta in params.items():
+            if param == "fan_boost":
+                # Boost is now controlled by the duration select and start button.
+                # Remove only its obsolete number so it does not remain unavailable.
+                registry = er.async_get(hass)
+                if entity_id := registry.async_get_entity_id(
+                    "number", DOMAIN, f"{entry.entry_id}_{node_id}_fan_boost"
+                ):
+                    registry.async_remove(entity_id)
+                continue
             # Skip schedules, config, and Name parameters
             if param == "Name" or param == "config" or "schedule" in param.lower():
                 continue

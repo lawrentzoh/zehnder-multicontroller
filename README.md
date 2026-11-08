@@ -18,9 +18,11 @@ For general Home Assistant discussions, visit the
 | Platform        | Description                                                 |
 | --------------- | ----------------------------------------------------------- |
 | `binary_sensor` | Read-only boolean sensors from your Zehnder devices.        |
+| `button`        | Confirm and start ventilation boost.                        |
 | `climate`       | Climate control for temperature and HVAC mode management.   |
 | `number`        | Number controls for writable numeric parameters.            |
 | `sensor`        | Sensor entities for temperature, humidity and other values. |
+| `select`        | Choose a ventilation boost duration before starting it.     |
 | `switch`        | Switch controls for writable boolean parameters.            |
 
 ## Installation
@@ -97,6 +99,26 @@ After a successful command, controls display the requested value immediately.
 The next cloud read is deferred by one polling interval to allow the reported
 state to catch up. The displayed value is initially optimistic; a later poll
 replaces it with the state reported by the cloud.
+
+## Ventilation boost
+
+Choose **Ventilation boost · 1. Duration**, then press **Ventilation boost · 2. Start** to
+confirm. Available durations match the Multi Controller app: 10, 20, 30, 40 and
+50 minutes, and 1, 2, 6, 12 and 24 hours. Changing the selection alone does not
+send a command. The selection is restored after a restart without starting boost.
+
+The command uses an expiry timestamp in Unix minutes, calculated when the button
+is pressed. Keep Home Assistant's clock synchronized. The selected duration is
+the setting for the next command, not a countdown or an indication that boost is
+currently active. Cloud readback remains subject to the configured polling delay.
+
+The old numeric `fan_boost` entity is removed on setup. Its raw cloud value
+represents an expiry rather than a duration, and its advertised numeric bounds
+do not match that readback. Automations targeting that old number must instead
+select a duration and press the start button. Other entity IDs are unchanged.
+
+The two boost controls use matching numbered names to appear consecutively in
+the correct order on Home Assistant's alphabetically sorted device page.
 
 ## Requirements
 

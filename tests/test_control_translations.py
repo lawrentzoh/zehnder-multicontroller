@@ -40,7 +40,6 @@ CONTROLS = [
         "Ventilation away setting",
         "Impostazione assenza ventilazione",
     ),
-    ("number", "fan_boost", "Ventilation boost", "Boost ventilazione"),
     ("number", "fan_speed", "Ventilation level", "Livello ventilazione"),
     (
         "number",

@@ -83,9 +83,6 @@
       "fan_away": {
         "name": "Impostazione assenza ventilazione"
       },
-      "fan_boost": {
-        "name": "Boost ventilazione"
-      },
       "fan_speed": {
         "name": "Livello ventilazione"
       },
@@ -128,6 +125,28 @@
       },
       "season_automatic": {
         "name": "Cambio stagione automatico"
+      }
+    },
+    "select": {
+      "boost_duration": {
+        "name": "Boost ventilazione · 1. Durata",
+        "state": {
+          "10_minutes": "10 minuti",
+          "20_minutes": "20 minuti",
+          "30_minutes": "30 minuti",
+          "40_minutes": "40 minuti",
+          "50_minutes": "50 minuti",
+          "1_hour": "1 ora",
+          "2_hours": "2 ore",
+          "6_hours": "6 ore",
+          "12_hours": "12 ore",
+          "24_hours": "24 ore"
+        }
+      }
+    },
+    "button": {
+      "start_boost": {
+        "name": "Boost ventilazione · 2. Avvia"
       }
     }
   }

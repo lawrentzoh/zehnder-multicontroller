@@ -83,9 +83,6 @@
       "fan_away": {
         "name": "Ventilation away setting"
       },
-      "fan_boost": {
-        "name": "Ventilation boost"
-      },
       "fan_speed": {
         "name": "Ventilation level"
       },
@@ -128,6 +125,28 @@
       },
       "season_automatic": {
         "name": "Automatic season change"
+      }
+    },
+    "select": {
+      "boost_duration": {
+        "name": "Ventilation boost · 1. Duration",
+        "state": {
+          "10_minutes": "10 minutes",
+          "20_minutes": "20 minutes",
+          "30_minutes": "30 minutes",
+          "40_minutes": "40 minutes",
+          "50_minutes": "50 minutes",
+          "1_hour": "1 hour",
+          "2_hours": "2 hours",
+          "6_hours": "6 hours",
+          "12_hours": "12 hours",
+          "24_hours": "24 hours"
+        }
+      }
+    },
+    "button": {
+      "start_boost": {
+        "name": "Ventilation boost · 2. Start"
       }
     }
   }

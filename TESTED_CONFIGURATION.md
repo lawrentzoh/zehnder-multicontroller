@@ -59,6 +59,17 @@ represent the air after the downstream ComfoDew.
 
 ## Limitations and outstanding checks
 
+- A 10-minute boost started in the app returned `fan_boost = 29902630`, which
+  decodes to 8 November 2026 at 18:10 Europe/Rome when interpreted as Unix minutes.
+  Writing `600` through the old numeric entity instead stopped boost: subsequent
+  cloud reads returned `0` and ventilation level `1`. The metadata bounds
+  (600–86400) therefore must not be used to infer the command encoding.
+- New duration-selection and start-button controls calculate an expiry in Unix
+  minutes. At approximately 18:07 on 8 November 2026 (Europe/Rome), pressing start
+  with the default 10-minute choice sent `29902637` (18:17). A subsequent cloud
+  poll retained that expiry and reported ventilation level `3`. Other durations
+  and automatic restoration after expiry still need real-device checks.
+
 - No separate slave entities were found. Slave readings and controls have not
   been verified through the integration.
 - The exposed `dehumidifier` binary sensor was read, but its meaning as local
