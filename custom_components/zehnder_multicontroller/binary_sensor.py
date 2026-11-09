@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import logging
+import math
+import time
 from functools import cached_property
 
 from homeassistant.components.binary_sensor import BinarySensorEntity
@@ -18,7 +20,7 @@ from .const import DOMAIN
 _LOGGER = logging.getLogger(__name__)
 
 TRANSLATED_PARAMETERS = frozenset(
-    {"dehumidifier", "integration", "radiant", "season_automatic"}
+    {"dehumidifier", "integration", "radiant", "season_automatic", "boost_active"}
 )
 
 
@@ -62,6 +64,27 @@ class RainmakerParamBinarySensor(CoordinatorEntity, BinarySensorEntity):
         )
 
 
+class RainmakerBoostActiveSensor(RainmakerParamBinarySensor):
+    """Interpret the reported fan_boost expiry in Unix minutes."""
+
+    _attr_icon = "mdi:fan-clock"
+
+    @property
+    def is_on(self) -> bool | None:
+        value = (
+            self.coordinator.data.get(self._node_id, {})
+            .get("fan_boost", {})
+            .get("value")
+        )
+        try:
+            expiry = float(value)
+        except (TypeError, ValueError):
+            return None
+        if not math.isfinite(expiry) or expiry < 0:
+            return None
+        return expiry * 60 > time.time()
+
+
 async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> None:
@@ -77,6 +100,12 @@ async def async_setup_entry(
     entities: list[RainmakerParamBinarySensor] = []
     for node_id, params in coordinator.data.items():
         node_name = params.get("Name", {}).get("value", node_id)
+        if "read" in params.get("fan_boost", {}).get("properties", []):
+            entities.append(
+                RainmakerBoostActiveSensor(
+                    coordinator, entry.entry_id, node_id, node_name, "boost_active"
+                )
+            )
         for param, meta in params.items():
             # Skip schedules, config, and Name parameters
             if param == "Name" or param == "config" or "schedule" in param.lower():

@@ -70,6 +70,12 @@ represent the air after the downstream ComfoDew.
   poll retained that expiry and reported ventilation level `3`. Other durations
   and automatic restoration after expiry still need real-device checks.
 
+- On 9 November 2026, the calculated boost sensor turned off at 08:40:26 while
+  cloud-reported ventilation returned to level 1 at 08:43:56 (Europe/Rome).
+  The installation owner subsequently found the central unit's clock offset by
+  approximately 3–4 minutes and corrected it. This is consistent with the delay,
+  but a repeat timing check after clock correction remains outstanding.
+
 - No separate slave entities were found. Slave readings and controls have not
   been verified through the integration.
 - The exposed `dehumidifier` binary sensor was read, but its meaning as local

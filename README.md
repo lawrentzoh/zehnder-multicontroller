@@ -120,6 +120,18 @@ select a duration and press the start button. Other entity IDs are unchanged.
 The two boost controls use matching numbered names to appear consecutively in
 the correct order on Home Assistant's alphabetically sorted device page.
 
+The **Ventilation boost active** binary sensor compares the cloud-reported boost
+expiry with the current time. It uses the existing polling updates and also
+recognizes boosts started in the app. It is not based on ventilation level 3,
+which can be selected manually. Require this sensor to be `off` before starting a
+boost in an automation to avoid restarting an already active boost. Unknown or
+unavailable states should not pass that condition.
+
+Keep Home Assistant and the central ventilation unit's clocks synchronized.
+An offset can make the calculated boost-active sensor turn off before the unit
+actually restores its previous ventilation level. This sensor represents the
+scheduled expiry, not independent confirmation of fan operation.
+
 ## Requirements
 
 This integration uses the `rainmaker-http` Python package to communicate with the Rainmaker API.

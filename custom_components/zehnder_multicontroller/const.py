@@ -7,7 +7,7 @@ from homeassistant.const import Platform
 # Base component constants
 NAME = "Zehnder Multicontroller"
 DOMAIN = "zehnder_multicontroller"
-VERSION = "0.2.7"
+VERSION = "0.2.8"
 ATTRIBUTION = "Data provided by Zehnder Multicontroller Integration"
 
 # Platforms
